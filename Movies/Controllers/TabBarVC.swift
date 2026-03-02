@@ -1,29 +1,27 @@
-//
-//  TabBarVC.swift
-//  Movies
-//
-//  Created by Gagan Verma on 09/02/26.
-//
-
 import UIKit
 
 class TabBarVC: UITabBarController {
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
+        let moviesVC = MoviesVC()
+        moviesVC.title = "Movies"
+        
+        let favVC = FavouritesVC()
+        favVC.title = "Favourites"
+        
+        let nav1 = UINavigationController(rootViewController: moviesVC)
+        let nav2 = UINavigationController(rootViewController: favVC)
+        
+        nav1.tabBarItem = UITabBarItem(title: "Movies",
+                                       image: (UIImage(systemName: "film")),
+                                       tag: 0)
+        
+        nav2.tabBarItem = UITabBarItem(title: "Favourites",
+                                       image: (UIImage(systemName: "star.fill")),
+                                       tag: 1)
+        viewControllers = [nav1 , nav2]
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }

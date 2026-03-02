@@ -2,28 +2,33 @@ import UIKit
 
 class MoviesDetailVC: UIViewController {
     
+    var movie: Movie?
     let posterImage = UIImageView()
     let titleLabel = UILabel()
-    
-    var movie : Movie?
+    let favouriteButton = UIButton(type: .system)
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
         setup()
         configure()
+        updateButtonTitle()
     }
     
     
     func setup(){
         posterImage.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        favouriteButton.translatesAutoresizingMaskIntoConstraints = false
         
         posterImage.contentMode = .scaleAspectFit
         titleLabel.font = .systemFont(ofSize: 22, weight: .bold)
         titleLabel.textAlignment = .center
         
+        favouriteButton.addTarget(self, action: #selector(addTapped), for: .touchUpInside)
+        
         view.addSubview(posterImage)
         view.addSubview(titleLabel)
+        view.addSubview(favouriteButton)
         
         NSLayoutConstraint.activate([
             posterImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
@@ -33,7 +38,9 @@ class MoviesDetailVC: UIViewController {
             
             titleLabel.topAnchor.constraint(equalTo: posterImage.bottomAnchor, constant: 20),
             titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
+            
+            favouriteButton.topAnchor.constraint(equalTo: posterImage.bottomAnchor, constant: 20),
+            favouriteButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
         ])
     }
     
@@ -50,6 +57,19 @@ class MoviesDetailVC: UIViewController {
                 }
                 
             }.resume()
+            
         }
+    }
+    
+    @objc func addTapped(){
+        guard let movie = movie else{return}
+        CoreDataManager.shared.toggle(movie)
+        updateButtonTitle()
+    }
+    func updateButtonTitle(){
+        guard let movie = movie else {return}
+        let isFav = CoreDataManager.shared.isFavourites(id: movie.id)
+        favouriteButton.setTitle(isFav ? "Remove Favourites" : "Add Favourites", for: .normal)
+        
     }
 }

@@ -1,8 +1,8 @@
-//
-//  Movie.swift
-//  Movies
-//
-//  Created by Gagan Verma on 05/02/26.
-//
-
 import Foundation
+
+struct Movie: Codable{
+    let id: Int
+    let title: String
+    let image: String?
+    let link: String
+}
