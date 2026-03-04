@@ -54,4 +54,36 @@ class CoreDataManager{
         }
         
     }
+    
+    func saveMovies(_ movies: [Movie]){
+       for movie in movies{
+           let entity = MovieEntity(context: context)
+            entity.id = Int64(movie.id)
+            entity.title = movie.title
+            entity.image = movie.image
+            entity.link = movie.link
+        }
+        savecontext()
+    }
+    
+    func fetchCachedMovies() -> [Movie]{
+        let request: NSFetchRequest<MovieEntity> = MovieEntity.fetchRequest()
+        let entities = (try? context.fetch(request)) ?? []
+        
+        return entities.map{
+            Movie(id: Int($0.id),
+                  title: $0.title ?? " ",
+                  image: $0.image,
+                  link: $0.link ?? " "
+            )
+        }
+    }
+    
+    func clearCachedMovies(){
+        let request: NSFetchRequest<MovieEntity> = MovieEntity.fetchRequest()
+        let result = (try? context.fetch(request)) ?? []
+        result.forEach{context.delete($0)}
+        savecontext()
+    }
+    
 }

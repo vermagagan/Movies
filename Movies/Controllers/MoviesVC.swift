@@ -1,5 +1,6 @@
 import UIKit
 class MoviesVC: UIViewController, UITableViewDelegate, UITableViewDataSource,UISearchBarDelegate{
+    
     let searchbar = UISearchBar()
     let tableView = UITableView()
     let viewmodel = MoviesViewModel()
@@ -8,6 +9,8 @@ class MoviesVC: UIViewController, UITableViewDelegate, UITableViewDataSource,UIS
     let retryButton = UIButton()
     let errorLabel =  UILabel()
     let refreshControl = UIRefreshControl()
+    
+    var searchWorkItem : DispatchWorkItem?
     
     
     override func viewDidLoad() {
@@ -111,14 +114,17 @@ class MoviesVC: UIViewController, UITableViewDelegate, UITableViewDataSource,UIS
                 self.messageLabel.isHidden = true
             case .empty:
                 self.loader.stopAnimating()
+                self.refreshControl.endRefreshing()
                 self.messageLabel.isHidden = false
                 self.messageLabel.text = "Empty"
             case .error(let error):
                 self.loader.stopAnimating()
+                self.refreshControl.endRefreshing()
                 self.messageLabel.text = error
                 self.messageLabel.isHidden = false
             case .success:
                 self.loader.stopAnimating()
+                self.refreshControl.endRefreshing()
                 self.messageLabel.isHidden = true
             }
         }
@@ -190,7 +196,13 @@ class MoviesVC: UIViewController, UITableViewDelegate, UITableViewDataSource,UIS
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        viewmodel.filterMovies(query: searchText)
+        searchWorkItem?.cancel()
+        
+        let workItem = DispatchWorkItem{ [weak self ] in
+            self?.viewmodel.filterMovies(query: searchText)
+        }
+        searchWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now()+0.5, execute: workItem)
     }
     
     
@@ -200,7 +212,7 @@ class MoviesVC: UIViewController, UITableViewDelegate, UITableViewDataSource,UIS
             let frameHeight = scrollView.frame.size.height
 
             if position > contentHeight - frameHeight - 100 {
-                viewmodel.fetchMovies()
+                viewmodel.fetchMovies(isNewLoad: false)
             }
     }
     @objc func retryTapped(){

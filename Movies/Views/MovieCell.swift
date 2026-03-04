@@ -5,6 +5,7 @@ class MovieCell: UITableViewCell {
     let titleLable = UILabel()
     let actionButton = UIButton(type: .system)
     private var link : String?
+    var currentImageUrl : String?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -52,12 +53,24 @@ class MovieCell: UITableViewCell {
         titleLable.text = movie.title
         link = movie.link
         posterImage.image = nil
-        if let imageUrl = movie.image, !imageUrl.isEmpty{
-            loadImage(urlString: imageUrl)
+        
+        
+       guard let imageUrl = movie.image, !imageUrl.isEmpty else{
+           posterImage.image = UIImage(systemName: "film")
+           return
         }
-        else{
-            posterImage.image = UIImage(systemName: "film")
+        
+        currentImageUrl = imageUrl
+        
+        imageLoader.shared.loadImage(from: imageUrl){ [weak self] image in
+            guard let self = self else{return}
+            
+            if self.currentImageUrl == imageUrl{
+                self.posterImage.image = image
+            }
         }
+        
+        
     }
     
     func loadImage(urlString : String){

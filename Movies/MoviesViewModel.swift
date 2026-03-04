@@ -3,6 +3,7 @@ class MoviesViewModel{
     private let network = NetworkManager()
     var filteredMovies:[Movie] = []
     private(set) var movies:[Movie] = []
+    
     var state: ((ViewState) -> Void)?
     var onDataUpload : (() -> Void)?
     
@@ -21,8 +22,9 @@ class MoviesViewModel{
         }
         isLoading = true
         state?(.loading)
-        network.fetchMovies(page: currentpage){result in
-            DispatchQueue.main.asyncAfter(deadline: .now()+3) {
+        network.fetchMovies(page: currentpage){[weak self] result in
+            guard let self = self else{return}
+            DispatchQueue.main.async{
                 
                 self.isLoading = false
                 
@@ -33,16 +35,29 @@ class MoviesViewModel{
                         self.state?(.empty)
                         return
                     }
+                    if self.currentpage == 1{
+                        CoreDataManager.shared.clearCachedMovies()
+                    }
+                    CoreDataManager.shared.saveMovies(movie)
+                    
                     self.movies.append(contentsOf: movie)
                     self.filteredMovies = self.movies
-                    self.currentpage = +1
+                    self.currentpage += 1
                     
                     self.state?(.success)
                     self.onDataUpload?()
                     
                     
-                case .failure(let error):
-                    self.state?(.error(error.localizedDescription))
+                case .failure:
+                    let cached = CoreDataManager.shared.fetchCachedMovies()
+                    
+                    if cached.isEmpty{
+                        self.state?(.error("No Internet and cached data"))
+                    }
+                    self.movies = cached
+                    self.filteredMovies = cached
+                    self.state?(.success)
+                    self.onDataUpload?()
                 }
             }
         }
